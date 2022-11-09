@@ -28,13 +28,11 @@
 #define BG_WHITE              "\033[47m"
 #define BG_RESET              "\033[0m"
 
-using namespace std;
-
 class Logger {
 private:
-    recursive_mutex mtx;
+    std::recursive_mutex mtx;
 public:
-    ofstream of;
+    std::ofstream of;
     enum Level {
         NO,
         ERRO,
@@ -42,11 +40,16 @@ public:
         INFO,
         DEBUG,
     };
+
+#ifndef LOG_LEVEL_DEFAULT
+#define LOG_LEVEL_DEFAULT INFO
+#endif
+
     uint32_t log_mask;
     Level log_level;
 
     Logger() {
-        log_level = INFO;
+        log_level = LOG_LEVEL_DEFAULT;
         log_mask = -1;
     }
     ~Logger() {
@@ -54,17 +57,17 @@ public:
             of.close();
     }
 
-    void open(const string &fname) {
-        unique_lock<recursive_mutex> lck(mtx);
+    void open(const std::string &fname) {
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
-        of.open(fname, ios::out);
+        of.open(fname, std::ios::out);
         if (of.fail()) {
-            cout << "Failed to open " << fname << " as log file." << endl;
+            std::cout << "Failed to open " << fname << " as log file." << std::endl;
         }
     }
 
-    void set_level(const string &level) {
-        unique_lock<recursive_mutex> lck(mtx);
+    void set_level(const std::string &level) {
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
         if (level == "NO")
             log_level = NO;
@@ -77,25 +80,25 @@ public:
         else if (level == "DEBUG")
             log_level = DEBUG;
         else
-            cout << "Unknown log level : " << level << "\n";
+            std::cout << "Unknown log level : " << level << "\n";
     }
 
     void flush() {
-        unique_lock<recursive_mutex> lck(mtx);
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
-        cout.flush();
+        std::cout.flush();
         of.flush();
     }
 
     Logger & operator << (const double &a) {
-        unique_lock<recursive_mutex> lck(mtx);
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
-        cout << a;
+        std::cout << a;
         if (fabs(a) < 0.001) {
             if (fabs(a) < 1e-9)
                 of << 0;
             else
-                of << fixed << showpoint << setprecision(6) << a;
+                of << std::fixed << std::showpoint << std::setprecision(6) << a;
         }
         else
             of << a;
@@ -104,24 +107,24 @@ public:
 
     template<typename T>
     Logger & operator << (const T &a) {
-        unique_lock<recursive_mutex> lck(mtx);
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
-        cout << a;
+        std::cout << a;
         of << a;
         return *this;
     }
 
-    Logger & operator << (ostream& (*fp)(ostream&)) {
-        unique_lock<recursive_mutex> lck(mtx);
+    Logger & operator << (std::ostream& (*fp)(std::ostream&)) {
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
-        cout << fp;
+        std::cout << fp;
         of << fp;
         return *this;
     }
     
     template<typename T>
     Logger & operator () (const T &arg1) {
-        unique_lock<recursive_mutex> lck(mtx);
+        std::unique_lock<std::recursive_mutex> lck(mtx);
 
         return (*this) << arg1 << "\n";
     }
@@ -129,7 +132,7 @@ public:
     
     template<typename T, typename... Args>
     Logger & operator () (const T &arg1, const Args &...args) {
-        unique_lock<recursive_mutex> lck(mtx);
+        std::unique_lock<std::recursive_mutex> lck(mtx);
         
         return ((*this) << arg1)(args...);
     }

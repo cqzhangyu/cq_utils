@@ -54,6 +54,7 @@ else
     proj_path=$(cd `dirname $0`; cd ..; pwd)
 fi
 
-# echo_info "Project path: ${proj_path}"
 build_path=${proj_path}/bin
-# echo_info "Build path: ${build_path}"
+
+echo_info "Project path: ${proj_path}"
+echo_info "Build path: ${build_path}"
